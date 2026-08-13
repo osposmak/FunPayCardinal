@@ -1,7 +1,9 @@
 import time
+import keep_alive
 from pip._internal.cli.main import main
 
 # todo убрать когда-то
+keep_alive.keep_alive()
 
 try:
     import lxml
