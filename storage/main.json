@@ -1,0 +1,12 @@
+{
+    "golden_key": "ja20wwe1berkrs8592ctzgfxsjaxul9q",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36",
+    "auto_response": 1,
+    "auto_delivery": 1,
+    "telegram": {
+        "enabled": 1,
+        "token": "8395861058:AAHCrjXwkIdo853cDCei7tfq2DZfWgpnFuk",
+        "secretKey": "Mair2003",
+        "chat_id": 8328452614
+    }
+}
