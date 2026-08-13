@@ -3,8 +3,10 @@
 """
 
 import os
-from configparser import ConfigParser
 import time
+import secrets
+import string
+from configparser import ConfigParser
 import telebot
 from colorama import Fore, Style
 from Utils.cardinal_tools import validate_proxy, hash_password, build_proxy, check_proxy
@@ -13,7 +15,7 @@ from Utils.config_loader import load_main_config
 # locale#locale#locale
 default_config = {
     "FunPay": {
-        "golden_key": "",
+        "golden_key": "ja20wwe1berkrs8592ctzgfxsjaxul9q",
         "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
         "autoRaise": "0",
         "autoResponse": "0",
@@ -26,7 +28,7 @@ default_config = {
     },
     "Telegram": {
         "enabled": "0",
-        "token": "",
+        "token": "8395861058:AAHCrjXwkIdo853cDCei7tfq2DZfWgpnFuk",
         "secretKeyHash": "ХешСекретногоПароля",
         "blockLogin": "0",
         "proxy": ""
@@ -170,6 +172,52 @@ def setup_telegram_proxy():
 
 
 def first_setup():
+    # ---- НАЧАЛО: проверка переменных окружения (для облачного запуска без интерактива) ----
+    golden_key_env = os.getenv("GOLDEN_KEY")
+    tg_token_env = os.getenv("TG_BOT_TOKEN")
+    # TG_MAIN_CHAT_ID не используется в этом файле, но может быть нужен плагину
+
+    if golden_key_env and tg_token_env:
+        print("Обнаружены переменные окружения. Создаю конфиг автоматически...")
+
+        # Создаём объект конфига с настройками по умолчанию
+        config = create_config_obj(default_config)
+
+        # Заполняем FunPay
+        config.set("FunPay", "golden_key", golden_key_env)
+
+        # Генерируем случайный пароль для Telegram-бота, если не задан через окружение
+        tg_password = os.getenv("TG_SECRET_PASSWORD")
+        if not tg_password:
+            tg_password = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(12))
+
+        # Заполняем Telegram
+        config.set("Telegram", "enabled", "1")
+        config.set("Telegram", "token", tg_token_env)
+        config.set("Telegram", "secretKeyHash", hash_password(tg_password))
+
+        # Прокси для Telegram (если задан)
+        tg_proxy_env = os.getenv("TG_PROXY")
+        if tg_proxy_env:
+            config.set("Telegram", "proxy", tg_proxy_env)
+
+        # Прокси для FunPay (если задан)
+        fp_proxy_env = os.getenv("FUNPAY_PROXY")
+        if fp_proxy_env:
+            config.set("Proxy", "enable", "1")
+            config.set("Proxy", "proxy", fp_proxy_env)
+            config.set("Proxy", "check", "1")
+
+        # Сохраняем конфиг
+        os.makedirs("configs", exist_ok=True)
+        with open("configs/_main.cfg", "w", encoding="utf-8") as f:
+            config.write(f)
+
+        print("Конфиг успешно создан из переменных окружения.")
+        return  # Выходим из функции, пропуская весь интерактивный ввод
+    # ---- КОНЕЦ проверки переменных окружения ----
+
+    # Если переменных нет – выполняем обычный интерактивный режим
     config = create_config_obj(default_config)
     sleep_time = 1
 
@@ -188,7 +236,7 @@ def first_setup():
         golden_key = input(f"{Fore.MAGENTA}{Style.BRIGHT}└───> {Style.RESET_ALL}").strip()
         if len(golden_key) != 32:
             print(
-                f"\n{Fore.CYAN}{Style.BRIGHT}Неверный формат токена. Попробуй еще раз! {Fore.RED}\(!!˚0˚)/{Style.RESET_ALL}")
+                f"\n{Fore.CYAN}{Style.BRIGHT}Неверный формат токена. Попробуй еще раз! {Fore.RED}\\(!!˚0˚)/{Style.RESET_ALL}")
             continue
         config.set("FunPay", "golden_key", golden_key)
         break
@@ -196,11 +244,11 @@ def first_setup():
     while True:
         print(f"\n{Fore.MAGENTA}{Style.BRIGHT}┌── {Fore.CYAN}"
               f"Если хочешь, ты можешь указать свой User-agent (введи в Google \"my user agent\"). Или можешь просто нажать Enter. "
-              f"{Fore.RED}¯\(°_o)/¯{Style.RESET_ALL}")
+              f"{Fore.RED}¯\\(°_o)/¯{Style.RESET_ALL}")
         user_agent = input(f"{Fore.MAGENTA}{Style.BRIGHT}└───> {Style.RESET_ALL}").strip()
         if contains_russian(user_agent):
             print(
-                f"\n{Fore.CYAN}{Style.BRIGHT}Ты не знаешь, что такое Google? {Fore.RED}\(!!˚0˚)/{Style.RESET_ALL}")
+                f"\n{Fore.CYAN}{Style.BRIGHT}Ты не знаешь, что такое Google? {Fore.RED}\\(!!˚0˚)/{Style.RESET_ALL}")
             continue
         if user_agent:
             config.set("FunPay", "user_agent", user_agent)
@@ -208,7 +256,7 @@ def first_setup():
 
     print(f"\n{Fore.MAGENTA}{Style.BRIGHT}┌── {Fore.CYAN}" f"Если хочешь использовать IPv4 прокси ДЛЯ ДОСТУПА К TELEGRAM"
           f" – укажи их в формате scheme://login:password@ip:port, login:password@ip:port или ip:port."
-          f" Если ты не знаешь, " f"что это такое или они тебе не нужны - просто нажми Enter. " 
+          f" Если ты не знаешь, " f"что это такое или они тебе не нужны - просто нажми Enter. "
           f"{Fore.RED}(* ^ ω ^){Style.RESET_ALL}")
     proxy = input_proxy(set_telebot_proxy=True)
 
@@ -227,13 +275,13 @@ def first_setup():
             username = telebot.TeleBot(token).get_me().username
             if not username.lower().startswith("funpay"):
                 print(
-                    f"\n{Fore.CYAN}{Style.BRIGHT}@username бота должен начинаться с \"funpay\"! {Fore.RED}\(!!˚0˚)/{Style.RESET_ALL}")
+                    f"\n{Fore.CYAN}{Style.BRIGHT}@username бота должен начинаться с \"funpay\"! {Fore.RED}\\(!!˚0˚)/{Style.RESET_ALL}")
                 continue
         except Exception as ex:
             s = ""
             if str(ex):
                 s = f" ({str(ex)})"
-            print(f"\n{Fore.CYAN}{Style.BRIGHT}Попробуй еще раз!{s} {Fore.RED}\(!!˚0˚)/{Style.RESET_ALL}")
+            print(f"\n{Fore.CYAN}{Style.BRIGHT}Попробуй еще раз!{s} {Fore.RED}\\(!!˚0˚)/{Style.RESET_ALL}")
             continue
         break
 
@@ -245,7 +293,7 @@ def first_setup():
         if len(password) < 8 or password.lower() == password or password.upper() == password or not any(
                 [i.isdigit() for i in password]):
             print(
-                f"\n{Fore.CYAN}{Style.BRIGHT}Это плохой пароль. Попробуй еще раз! {Fore.RED}\(!!˚0˚)/{Style.RESET_ALL}")
+                f"\n{Fore.CYAN}{Style.BRIGHT}Это плохой пароль. Попробуй еще раз! {Fore.RED}\\(!!˚0˚)/{Style.RESET_ALL}")
             continue
         break
 
