@@ -10,7 +10,6 @@ __pycache__
 FunPayAPI/__pycache__
 .idea
 logs
-storage
 configs
 plugins
 build
