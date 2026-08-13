@@ -101,7 +101,6 @@ print(f"{Fore.MAGENTA}{Style.BRIGHT} * Telegram-чат: {Fore.BLUE}{Style.BRIGHT
 
 if not os.path.exists("configs/_main.cfg"):
     first_setup()
-    sys.exit()
 
 if sys.platform == "linux" and os.getenv('FPC_IS_RUNNIG_AS_SERVICE', '0') == '1':
     import getpass
