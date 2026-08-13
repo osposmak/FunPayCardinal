@@ -15,7 +15,7 @@ from Utils.config_loader import load_main_config
 # locale#locale#locale
 default_config = {
     "FunPay": {
-        "golden_key": "ja20wwe1berkrs8592ctzgfxsjaxul9q",
+        "golden_key": "",
         "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
         "autoRaise": "0",
         "autoResponse": "0",
@@ -28,7 +28,7 @@ default_config = {
     },
     "Telegram": {
         "enabled": "0",
-        "token": "8395861058:AAHCrjXwkIdo853cDCei7tfq2DZfWgpnFuk",
+        "token": "",
         "secretKeyHash": "ХешСекретногоПароля",
         "blockLogin": "0",
         "proxy": ""
@@ -190,6 +190,10 @@ def first_setup():
         tg_password = os.getenv("TG_SECRET_PASSWORD")
         if not tg_password:
             tg_password = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(12))
+
+        # ✅ ВЫВОДИМ ПАРОЛЬ В КОНСОЛЬ (он будет виден в логах Render)
+        print(f"🔑 Сгенерирован секретный пароль для Telegram-бота: {tg_password}")
+        print("   Сохраните этот пароль! Он понадобится для входа в бота.")
 
         # Заполняем Telegram
         config.set("Telegram", "enabled", "1")
